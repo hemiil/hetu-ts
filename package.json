@@ -1,0 +1,49 @@
+{
+  "name": "@hemiil/hetu",
+  "version": "2.0.0",
+  "description": "Modern, zero-dependency TypeScript library for Finnish personal identity codes (HETU)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc --noEmit -p tsconfig.test.json && vitest run",
+    "test:coverage": "vitest run --coverage",
+    "smoke": "node scripts/smoke.mjs",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hemiil/hetu-ts.git"
+  },
+  "keywords": [
+    "hetu",
+    "finnish",
+    "ssn",
+    "typescript",
+    "validation"
+  ],
+  "author": "hemiil",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
