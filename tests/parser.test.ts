@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { HetuError, birthDateToUtcDate, isValidHetu, parseHetu, type CenturyMark } from '../src/index.js';
+import {
+  HetuError,
+  birthDateToUtcDate,
+  isValidHetu,
+  parseHetu,
+  type CenturyMark,
+} from '../src/index.js';
 
 describe('parser', () => {
   it('parses the canonical code', () => {
@@ -91,7 +97,7 @@ describe('parser', () => {
 
   it('converts a birth date to UTC midnight', () => {
     expect(birthDateToUtcDate({ year: 1952, month: 10, day: 13 }).toISOString()).toBe(
-      '1952-10-13T00:00:00.000Z',
+      '1952-10-13T00:00:00.000Z'
     );
     expect(() => birthDateToUtcDate({ year: 1900, month: 2, day: 29 })).toThrow(HetuError);
   });

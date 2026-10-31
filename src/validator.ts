@@ -1,4 +1,4 @@
-import { readHetu } from './rules.js';
+import { readHetu } from './read.js';
 import type { ValidHetu } from './types.js';
 
 /**

@@ -25,7 +25,7 @@ describe('generator', () => {
         gender: 'female',
         artificial: false,
         random: high,
-      }),
+      })
     );
     const male = parseHetu(
       generateTestHetu({
@@ -34,7 +34,7 @@ describe('generator', () => {
         gender: 'male',
         artificial: false,
         random: zero,
-      }),
+      })
     );
 
     expect(female.individualNumber).toBe(898);
@@ -59,7 +59,7 @@ describe('generator', () => {
         birthDate: { year: 1890, month: 3, day: 15 },
         gender: 'female',
         random: zero,
-      }),
+      })
     );
 
     expect(details.centuryCode).toBe('+');
@@ -72,17 +72,17 @@ describe('generator', () => {
         birthDate: { year: 2004, month: 2, day: 29 },
         gender: 'female',
         random: zero,
-      }),
+      })
     );
     expect(modern.centuryCode).toBe('A');
     expect(modern.birthDate).toEqual({ year: 2004, month: 2, day: 29 });
   });
 
   it('draws an undated code from the previous 80 UTC years', () => {
-    const utcYear = new Date().getUTCFullYear();
-    const details = parseHetu(generateTestHetu({ gender: 'female', random: zero }));
+    const now = new Date(Date.UTC(2030, 5, 15));
+    const details = parseHetu(generateTestHetu({ gender: 'female', random: zero, now }));
 
-    expect(details.birthDate).toEqual({ year: utcYear - 80, month: 1, day: 1 });
+    expect(details.birthDate).toEqual({ year: 1950, month: 1, day: 1 });
     expect(isValidHetu(details.raw)).toBe(true);
     expect(details.individualNumber).toBe(900);
     expect(details.isTemporary).toBe(true);
@@ -93,8 +93,10 @@ describe('generator', () => {
       generateTestHetu({ birthDate: { year: 1900, month: 2, day: 29 } });
     const mismatch = (): unknown =>
       generateTestHetu({ birthDate: { year: 1990, month: 1, day: 1 }, century: '+' });
-    const outOfRange = (): unknown => generateTestHetu({ birthDate: { year: 2100, month: 1, day: 1 } });
-    const tooEarly = (): unknown => generateTestHetu({ birthDate: { year: 1799, month: 12, day: 31 } });
+    const outOfRange = (): unknown =>
+      generateTestHetu({ birthDate: { year: 2100, month: 1, day: 1 } });
+    const tooEarly = (): unknown =>
+      generateTestHetu({ birthDate: { year: 1799, month: 12, day: 31 } });
     const badRoll = (): unknown =>
       generateTestHetu({
         birthDate: { year: 1990, month: 1, day: 1 },
@@ -111,5 +113,31 @@ describe('generator', () => {
     expect(outOfRange).toThrow(expect.objectContaining({ reason: 'options', value: '2100-01-01' }));
     expect(tooEarly).toThrow(expect.objectContaining({ reason: 'options', value: '1799-12-31' }));
     expect(badRoll).toThrow(expect.objectContaining({ reason: 'options' }));
+  });
+
+  it('draws the default range from the real clock when no clock is given', () => {
+    const utcYear = new Date().getUTCFullYear();
+    const { birthDate } = parseHetu(generateTestHetu({ random: zero }));
+
+    expect(birthDate.year).toBe(utcYear - 80);
+  });
+
+  it('always builds parseable codes across the whole random range', () => {
+    let seed = 1;
+    const random = (): number => {
+      seed = (seed * 48271) % 2147483647;
+      return seed / 2147483647;
+    };
+
+    for (const century of ['+', '-', 'Y', 'A', 'F'] as const) {
+      for (const artificial of [true, false]) {
+        for (let i = 0; i < 200; i++) {
+          const details = parseHetu(generateTestHetu({ artificial, century, random }));
+
+          expect(details.centuryCode).toBe(century);
+          expect(details.isTemporary).toBe(artificial);
+        }
+      }
+    }
   });
 });

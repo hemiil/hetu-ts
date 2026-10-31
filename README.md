@@ -4,7 +4,7 @@ Zero-dependency TypeScript library for Finnish personal identity codes (henkilö
 
 A valid result means the code has the legal shape: a real birth date, an allowed individual number, and a matching check character. It does not mean that a person or an issued code exists. Do not use a code as authentication or authorization evidence.
 
-Requires Node.js 20 or newer. The package is ESM-only.
+Requires Node.js 22 or newer. The package is ESM-only.
 
 ```bash
 npm install @hemiil/hetu
@@ -23,9 +23,9 @@ The check character is an uppercase letter or a digit. Lowercase letters are rej
 
 ## Separators
 
-| Separator | Years |
-| --- | --- |
-| `+` | 1800–1899 |
+| Separator                    | Years     |
+| ---------------------------- | --------- |
+| `+`                          | 1800–1899 |
 | `-`, `Y`, `X`, `W`, `V`, `U` | 1900–1999 |
 | `A`, `B`, `C`, `D`, `E`, `F` | 2000–2099 |
 
@@ -44,6 +44,8 @@ import {
   generateTestHetu,
   isValidHetu,
   parseHetu,
+  safeParseHetu,
+  normalizeHetu,
 } from '@hemiil/hetu';
 
 isValidHetu('131052-308T');
@@ -72,13 +74,26 @@ try {
 }
 ```
 
+`safeParseHetu` does the same without throwing. It accepts any value and returns a result you narrow on `ok`:
+
+```ts
+const result = safeParseHetu(input);
+if (result.ok) {
+  result.details.birthDate;
+} else {
+  result.reason; // 'format' | 'date' | 'individual' | 'checksum'
+}
+```
+
+The validator is strict: whitespace and lowercase letters are rejected. For input typed or pasted by a person, run it through `normalizeHetu` first (trims and uppercases).
+
 `BirthDate` is a calendar day. `month` and `day` start at 1. Convert it with `birthDateToUtcDate` when a UTC midnight `Date` is required.
 
 ## Test codes
 
 `generateTestHetu` builds structurally valid test data. It does not issue real identity codes, and its output must not be stored as personal or production data.
 
-By default the individual number is artificial (`900`–`999`). Pass `artificial: false` only when a test needs the shape of an issued number (`002`–`899`). Those values can collide with a real code. Pass `random` when a test needs a fixed roll.
+By default the individual number is artificial (`900`–`999`). Pass `artificial: false` only when a test needs the shape of an issued number (`002`–`899`). Those values can collide with a real code. Pass `random` when a test needs a fixed roll, and `now` to fix the clock for the default birth-date range (the previous 80 UTC years).
 
 ```ts
 const artificial = generateTestHetu({
@@ -99,18 +114,18 @@ const issuedShape = generateTestHetu({
 
 ## Public types
 
-| Type | Meaning |
-| --- | --- |
-| `BirthDate` | `{ year, month, day }` |
-| `CenturyMark` | One separator from `CENTURY_BASE` |
-| `Gender` | `'male'` or `'female'` |
-| `HetuDetails` | Result of `parseHetu` |
-| `ValidHetu` | String narrowed by `isValidHetu` |
-| `GenerateHetuOptions` | Options for `generateTestHetu` |
-| `HetuError` | Thrown for invalid input, with `reason` and `value` |
-| `HetuErrorReason` | `'format'`, `'date'`, `'individual'`, `'checksum'`, or `'options'` |
+| Type                  | Meaning                                                            |
+| --------------------- | ------------------------------------------------------------------ |
+| `BirthDate`           | `{ year, month, day }`                                             |
+| `CenturyMark`         | One separator from `CENTURY_BASE`                                  |
+| `Gender`              | `'male'` or `'female'`                                             |
+| `HetuDetails`         | Result of `parseHetu`                                              |
+| `ValidHetu`           | String narrowed by `isValidHetu`                                   |
+| `GenerateHetuOptions` | Options for `generateTestHetu`                                     |
+| `HetuError`           | Thrown for invalid input, with `reason` and `value`                |
+| `HetuErrorReason`     | `'format'`, `'date'`, `'individual'`, `'checksum'`, or `'options'` |
 
-`HetuError.message` stays generic. The rejected input is on `error.value`, so logging it is the caller's decision.
+`HetuError.message` stays generic. The rejected input is on `error.value`, which is not enumerable, so loggers and `JSON.stringify` do not include it. Logging it is the caller's decision.
 
 ## Development
 

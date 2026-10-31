@@ -1,16 +1,9 @@
+import { daysInMonth, formatBirthDate, isRealDate } from './calendar.js';
+import { centuryYearRange, defaultCentury, yearMatchesCentury } from './century.js';
+import { controlCharacter } from './checksum.js';
 import { HetuError } from './error.js';
-import {
-  birthDateToken,
-  centuryYearRange,
-  controlCharacter,
-  daysInMonth,
-  defaultCentury,
-  individualSeries,
-  isRealDate,
-  yearMatchesCentury,
-} from './rules.js';
-import type { BirthDate, CenturyMark, Gender, GenerateHetuOptions } from './types.js';
-import { isValidHetu } from './validator.js';
+import { individualSeries } from './individual.js';
+import type { BirthDate, CenturyMark, Gender, GenerateHetuOptions, ValidHetu } from './types.js';
 
 const INVALID_OPTIONS = 'Cannot build a HETU from the given options';
 
@@ -34,26 +27,18 @@ const randomBirthDate = (startYear: number, endYear: number, random: () => numbe
 };
 
 const resolveBirthDate = (options: GenerateHetuOptions, random: () => number): BirthDate => {
-  const birthDate = options.birthDate;
+  const { birthDate, century } = options;
 
   if (birthDate) {
-    if (!isRealDate(birthDate.year, birthDate.month, birthDate.day)) {
-      throw new HetuError(
-        'date',
-        'Invalid birth date',
-        birthDateToken(birthDate.year, birthDate.month, birthDate.day),
-      );
+    if (!isRealDate(birthDate)) {
+      throw new HetuError('date', 'Invalid birth date', formatBirthDate(birthDate));
     }
 
-    if (options.century && !yearMatchesCentury(birthDate.year, options.century)) {
-      throw new HetuError(
-        'options',
-        INVALID_OPTIONS,
-        `${birthDateToken(birthDate.year, birthDate.month, birthDate.day)}/${options.century}`,
-      );
+    if (century && !yearMatchesCentury(birthDate.year, century)) {
+      throw new HetuError('options', INVALID_OPTIONS, `${formatBirthDate(birthDate)}/${century}`);
     }
 
-    return { year: birthDate.year, month: birthDate.month, day: birthDate.day };
+    return birthDate;
   }
 
   if (options.century) {
@@ -61,11 +46,14 @@ const resolveBirthDate = (options: GenerateHetuOptions, random: () => number): B
     return randomBirthDate(startYear, endYear, random);
   }
 
-  const utcYear = new Date().getUTCFullYear();
+  const utcYear = (options.now ?? new Date()).getUTCFullYear();
   return randomBirthDate(utcYear - 80, utcYear - 1, random);
 };
 
-const resolveCentury = (birthDate: BirthDate, explicitCentury: CenturyMark | undefined): CenturyMark => {
+const resolveCentury = (
+  birthDate: BirthDate,
+  explicitCentury: CenturyMark | undefined
+): CenturyMark => {
   if (explicitCentury) {
     return explicitCentury;
   }
@@ -73,11 +61,7 @@ const resolveCentury = (birthDate: BirthDate, explicitCentury: CenturyMark | und
   const century = defaultCentury(birthDate.year);
 
   if (!century) {
-    throw new HetuError(
-      'options',
-      INVALID_OPTIONS,
-      birthDateToken(birthDate.year, birthDate.month, birthDate.day),
-    );
+    throw new HetuError('options', INVALID_OPTIONS, formatBirthDate(birthDate));
   }
 
   return century;
@@ -88,7 +72,11 @@ const randomIndividual = (gender: Gender, artificial: boolean, random: () => num
   return series.start + 2 * pickIndex(random, series.count);
 };
 
-const formatHetu = (birthDate: BirthDate, century: CenturyMark, individualNumber: number): string => {
+const formatHetu = (
+  birthDate: BirthDate,
+  century: CenturyMark,
+  individualNumber: number
+): string => {
   const day = String(birthDate.day).padStart(2, '0');
   const month = String(birthDate.month).padStart(2, '0');
   const year = String(birthDate.year).slice(-2);
@@ -103,17 +91,11 @@ const formatHetu = (birthDate: BirthDate, century: CenturyMark, individualNumber
  * The individual number is artificial (900–999) unless `artificial` is `false`.
  * The result is not an issued identity and must not be used as production or personal data.
  */
-export const generateTestHetu = (options: GenerateHetuOptions = {}): string => {
+export const generateTestHetu = (options: GenerateHetuOptions = {}): ValidHetu => {
   const random = options.random ?? Math.random;
   const birthDate = resolveBirthDate(options, random);
   const century = resolveCentury(birthDate, options.century);
   const gender = options.gender ?? (pickIndex(random, 2) === 0 ? 'male' : 'female');
   const individualNumber = randomIndividual(gender, options.artificial !== false, random);
-  const candidate = formatHetu(birthDate, century, individualNumber);
-
-  if (!isValidHetu(candidate)) {
-    throw new HetuError('options', INVALID_OPTIONS, candidate);
-  }
-
-  return candidate;
+  return formatHetu(birthDate, century, individualNumber) as ValidHetu;
 };
