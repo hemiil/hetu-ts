@@ -22,7 +22,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc",
+    "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && tsc",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "smoke": "node scripts/smoke.mjs",
@@ -40,10 +41,12 @@
   },
   "keywords": [
     "hetu",
+    "henkilötunnus",
     "finnish",
+    "personal-identity-code",
     "ssn",
-    "typescript",
-    "validation"
+    "validation",
+    "typescript"
   ],
   "author": "hemiil",
   "license": "MIT",
@@ -60,5 +63,9 @@
   },
   "overrides": {
     "minimatch": "^11.0.2"
+  },
+  "homepage": "https://github.com/hemiil/hetu-ts#readme",
+  "bugs": {
+    "url": "https://github.com/hemiil/hetu-ts/issues"
   }
 }
