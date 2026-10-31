@@ -4,7 +4,7 @@ Thanks for helping improve hetu-ts.
 
 ## Setup
 
-The package requires Node.js 20 or newer and is ESM-only.
+The package requires Node.js 22 or newer and is ESM-only.
 
 ```bash
 npm ci

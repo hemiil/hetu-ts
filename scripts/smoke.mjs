@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import process from 'node:process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,7 +59,7 @@ try {
 
   await writeFile(
     join(directory, 'package.json'),
-    JSON.stringify({ name: 'hetu-smoke', private: true, type: 'module' }, null, 2),
+    JSON.stringify({ name: 'hetu-smoke', private: true, type: 'module' }, null, 2)
   );
   execFileSync('npm', ['install', '--no-fund', '--no-audit', join(directory, packed)], {
     cwd: directory,
@@ -66,7 +67,10 @@ try {
   });
 
   await writeFile(join(directory, 'smoke.mjs'), runtimeCheck);
-  execFileSync(process.execPath, [join(directory, 'smoke.mjs')], { cwd: directory, stdio: 'inherit' });
+  execFileSync(process.execPath, [join(directory, 'smoke.mjs')], {
+    cwd: directory,
+    stdio: 'inherit',
+  });
 
   await writeFile(join(directory, 'smoke.ts'), runtimeCheck);
   execFileSync(
@@ -84,7 +88,7 @@ try {
       'ES2022',
       join(directory, 'smoke.ts'),
     ],
-    { cwd: directory, stdio: 'inherit' },
+    { cwd: directory, stdio: 'inherit' }
   );
 } finally {
   await rm(directory, { recursive: true, force: true });

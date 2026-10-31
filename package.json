@@ -1,6 +1,6 @@
 {
   "name": "@hemiil/hetu",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Modern, zero-dependency TypeScript library for Finnish personal identity codes (HETU)",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,17 +16,24 @@
     "dist"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
     "build": "tsc",
-    "test": "tsc --noEmit -p tsconfig.test.json && vitest run",
+    "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "smoke": "node scripts/smoke.mjs",
-    "prepublishOnly": "npm test && npm run build"
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "audit": "npm audit",
+    "audit:fix": "npm audit fix",
+    "prepublishOnly": "npm run check && npm run build",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint .",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
   },
   "repository": {
     "type": "git",
@@ -42,8 +49,12 @@
   "author": "hemiil",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^5.0.3",
-    "typescript": "^7.0.2",
+    "eslint": "^10.14.0",
+    "prettier": "3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^5.0.3"
   }
 }
