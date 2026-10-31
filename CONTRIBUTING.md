@@ -8,15 +8,15 @@ The package requires Node.js 22 or newer and is ESM-only.
 
 ```bash
 npm ci
-npm test
+npm run check
 npm run build
 ```
 
-`npm test` typechecks `src` and `tests`, then runs Vitest. `npm run smoke` builds the package, installs the tarball in a temporary project, and checks that the JavaScript and TypeScript entry points load.
+`npm run check` typechecks `src` and `tests`, lints, checks formatting, and runs Vitest with coverage thresholds. `npm run format` fixes formatting. `npm run package-check` validates the built package with publint and Are the Types Wrong. `npm run smoke` builds the package, installs the tarball in a temporary project, and checks that the JavaScript and TypeScript entry points load.
 
 ## Changes
 
-- Keep domain rules in `src/rules.ts`. Validators, the parser, and the test-code generator should use those rules instead of copying them.
+- Keep domain rules in their own modules (`century`, `calendar`, `individual`, `checksum`) and the reading logic in `read.ts`. The validator, the parser, and the test-code generator should use those instead of copying rules.
 - Import internal modules with an explicit `.js` extension.
 - Add or update a fixed test vector when a personal-identity-code rule changes.
 - Do not commit `dist/` or `coverage/`. The publish step builds `dist`.

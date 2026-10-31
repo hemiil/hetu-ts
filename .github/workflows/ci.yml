@@ -30,11 +30,11 @@ jobs:
         run: npm run lint
       - name: Check formatting
         run: npm run format:check
-      - name: Test
-        run: npm test
+      - name: Test with coverage
+        run: npm run test:coverage
       - name: Build
         run: npm run build
       - name: Check package contents
-        run: npm pack --dry-run
+        run: npm run package-check
       - name: Smoke test the packed package
         run: npm run smoke
