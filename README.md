@@ -2,7 +2,7 @@
 
 Zero-dependency TypeScript library for Finnish personal identity codes (henkilötunnus).
 
-A valid result means the code has the legal shape: a real birth date, an allowed individual number, and a matching check character. It does not mean that a person or an issued code exists. Do not use a code as authentication or authorization evidence.
+A valid result means the code has the legal shape: a real birth date, an allowed individual number, and a matching check character. It does not mean that a person or an issued code exists. The library does not check that the birth date is in the past. Compare `birthDateToUtcDate(details.birthDate)` with your own clock when you need that. Do not use a code as authentication or authorization evidence.
 
 Requires Node.js 22 or newer. The package is ESM-only.
 

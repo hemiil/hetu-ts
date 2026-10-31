@@ -9,7 +9,14 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const directory = await mkdtemp(join(tmpdir(), 'hetu-smoke-'));
 
 const runtimeCheck = `
-import { HetuError, birthDateToUtcDate, generateTestHetu, isValidHetu, parseHetu } from '@hemiil/hetu';
+import {
+  HetuError,
+  birthDateToUtcDate,
+  generateTestHetu,
+  isValidHetu,
+  parseHetu,
+  safeParseHetu,
+} from '@hemiil/hetu';
 
 const code = '131052-308T';
 if (!isValidHetu(code)) {
@@ -32,6 +39,11 @@ if (utc.toISOString() !== '1952-10-13T00:00:00.000Z') {
 const generated = parseHetu(generateTestHetu({ gender: 'female', random: () => 0 }));
 if (!generated.isTemporary || generated.individualNumber !== 900) {
   throw new Error('expected the default test code to be artificial');
+}
+
+const safe = safeParseHetu('131052-308A');
+if (safe.ok || safe.reason !== 'checksum') {
+  throw new Error('expected safeParseHetu to report a checksum failure');
 }
 
 let rejected = false;
